@@ -1,0 +1,17 @@
+scan_mode: manual
+
+cron:
+  enabled: true
+  expression: "0 */6 * * *" # every 6 hours
+
+paths:
+  # replace with your username and desired paths
+  npm_cache: "/home/mrepol742/.npm"
+  quarantine: "/home/mrepol742/.npm-quarantine"
+
+security:
+  quarantine_enabled: true
+  risk_threshold: 50
+
+logging:
+  level: INFO

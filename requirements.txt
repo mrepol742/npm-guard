@@ -1,0 +1,6 @@
+watchdog
+requests
+apscheduler
+rich
+pyyaml
+python-Levenshtein
