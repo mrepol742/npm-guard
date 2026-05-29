@@ -1,12 +1,12 @@
 [Unit]
- Description=NPM Guard Supply Chain Security Daemon
- After=network.target
+Description=NPM Guard Supply Chain Security Daemon
+After=network.target
 
 [Service]
 Type=simple
 User=mrepol742
 WorkingDirectory=/opt/npm-guard
-ExecStart=/opt/npm-guard/.venv/bin/python /opt/npm-guard/main.py
+ExecStart=/usr/bin/npm-guard
 Restart=always
 RestartSec=60
 

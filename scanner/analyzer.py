@@ -40,18 +40,22 @@ def is_tarball(path: Path):
     except (tarfile.TarError, OSError, EOFError):
         return False
 
-# iterate over all tarball candidates in the npm cache directory
+# iterate over all tarball candidates in the npm cache directory with error resilience
 def iter_tarball_paths(npm_cache_root: Path):
     content_root = npm_cache_root / "_cacache" / "content-v2"
     search_root = content_root if content_root.exists() else npm_cache_root
 
     for path in search_root.rglob("*"):
-        if not path.is_file():
+        try:
+            if not path.is_file():
+                continue
+            if not is_tarball_candidate(path, npm_cache_root):
+                continue
+            if is_tarball(path):
+                yield path
+        except (OSError, PermissionError) as e:
+            print(f"[!] Skipping {path}: {e}")
             continue
-        if not is_tarball_candidate(path, npm_cache_root):
-            continue
-        if is_tarball(path):
-            yield path
 
 # compute the SHA256 hash of a file
 def sha256_file(path):

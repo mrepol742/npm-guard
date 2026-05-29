@@ -1,4 +1,6 @@
 import time
+import os
+import concurrent.futures
 from pathlib import Path
 
 import yaml
@@ -7,18 +9,20 @@ from watchdog.observers import Observer
 
 from db import insert_scan
 from quarantine import quarantine_file
-from scanner.analyzer import analyze_tarball, is_tarball, is_tarball_candidate
+from scanner.analyzer import analyze_tarball, sha256_file, is_tarball, is_tarball_candidate
 
 with open("config.yaml") as f:
     CONFIG = yaml.safe_load(f)
 
-
 NPM_CACHE = Path(CONFIG["paths"]["npm_cache"])
+MAX_WORKERS = os.cpu_count() or 4
 
-# event handler for the watchdog observer that processes new files created in the npm cache directory, checking if they are tarballs and analyzing them if they are
+
 class NPMWatcher(FileSystemEventHandler):
 
-    # handle the creation of new files in the monitored directory
+    def __init__(self):
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
+
     def on_created(self, event):
         if event.is_directory:
             return
@@ -27,31 +31,36 @@ class NPMWatcher(FileSystemEventHandler):
 
         if not is_tarball_candidate(path, NPM_CACHE):
             return
-
         if not is_tarball(path):
             return
 
+        self.executor.submit(self._process_package, path)
+
+    def _process_package(self, path):
         print(f"[+] New package detected: {path}")
+        try:
+            score, findings = analyze_tarball(path)
+            sha = sha256_file(path)
 
-        score, findings = analyze_tarball(path)
+            print(f"   Risk Score: {score}")
+            for finding in findings:
+                print(f"   - {finding}")
 
-        print(f"Risk Score: {score}")
+            insert_scan(str(path), sha, score, "; ".join(findings[:5]))
 
-        for finding in findings:
-            print(" -", finding)
+            if (
+                CONFIG["security"]["quarantine_enabled"]
+                and score >= CONFIG["security"]["risk_threshold"]
+            ):
+                quarantine_file(path, CONFIG["paths"]["quarantine"])
+        except Exception as e:
+            print(f"   [!] Error processing {path}: {e}")
 
-        insert_scan(str(path), "unknown", score)
 
-        if (
-            CONFIG["security"]["quarantine_enabled"]
-            and score >= CONFIG["security"]["risk_threshold"]
-        ):
-            quarantine_file(path, CONFIG["paths"]["quarantine"])
-
-# start the watchdog observer to monitor the npm cache directory for new files, using the NPMWatcher event handler to process new files as they are created
 def start_watcher():
     observer = Observer()
-    observer.schedule(NPMWatcher(), CONFIG["paths"]["npm_cache"], recursive=True)
+    handler = NPMWatcher()
+    observer.schedule(handler, CONFIG["paths"]["npm_cache"], recursive=True)
     observer.start()
     print("[*] NPMGuard watcher started")
     try:

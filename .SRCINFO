@@ -1,0 +1,20 @@
+pkgbase = npm-guard
+pkgdesc = NPM Guard Supply Chain Security Daemon - monitors npm cache for malicious packages
+pkgver = 1.0.0
+pkgrel = 1
+url = https://github.com/mrepol742/npm-guard
+arch = any
+license = MIT
+makedepends = git
+depends = python
+depends = python-pip
+depends = python-pyaml
+depends = python-requests
+depends = python-watchdog
+depends = python-apscheduler
+depends = python-rich
+depends = python-levenshtein
+source = npm-guard::git+https://github.com/mrepol742/npm-guard.git
+sha256sums = SKIP
+
+pkgname = npm-guard

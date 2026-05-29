@@ -2,14 +2,14 @@ import re
 
 
 SUSPICIOUS_PATTERNS = [
-    r"eval\\(",
-    r"Function\\(",
+    r"eval\(",
+    r"Function\(",
     r"child_process",
-    r"curl .*\\| bash",
-    r"wget .*\\| sh",
-    r"Buffer\\.from",
-    r"atob\\(",
-    r"crypto\\.createCipher",
+    r"curl .*\| bash",
+    r"wget .*\| sh",
+    r"Buffer\.from",
+    r"atob\(",
+    r"crypto\.createCipher",
 ]
 
 

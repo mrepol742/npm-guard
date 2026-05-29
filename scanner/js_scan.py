@@ -3,10 +3,10 @@ from pathlib import Path
 
 
 PATTERNS = {
-    "eval": r"eval\\(",
-    "base64": r"Buffer\\.from\\(.*base64",
-    "child_process": r"require\\(['\"]child_process['\"]\\)",
-    "curl_pipe": r"curl .*\\|",
+    "eval": r"eval\(",
+    "base64": r"Buffer\.from\(.*base64",
+    "child_process": r"require\(['\"]child_process['\"]\)",
+    "curl_pipe": r"curl .*\|",
 }
 
 
